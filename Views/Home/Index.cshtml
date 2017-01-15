@@ -1,0 +1,85 @@
+﻿@{
+    ViewBag.Title = "Safeway India";
+}
+<style>
+    .card {
+        border: 1px solid #e0e0e0;
+        height: 200px;
+        position: relative;
+        margin-top: 10px;
+        overflow: hidden;
+        cursor:pointer;
+        background:#e0e0e0;
+    }
+    .card-title {
+        text-align:center;
+        font-size:18px;
+        padding-top: 6px;
+        position: absolute;
+        width: 100%;
+        top: 164px;
+        color: #FFF;
+        background: rgba(0,0,0,0.7);
+        height: 100%;
+        -moz-transition: .4s;
+        -webkit-transition: .4s;
+        transition: .4s;
+        text-transform:uppercase;
+    }
+
+    .card:hover .card-title {
+        top: 0;
+        padding-top: 80px;
+    }
+</style>
+<div class="container">
+    <div class="col-sm-4 card-list">
+        <div class="card">
+            <div class="icon">
+                <i class="glyphicon"></i>
+            </div>
+            <div class="card-title">Register a User</div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card">
+            <div class="icon">
+                <i class="glyphicon"></i>
+            </div>
+            <div class="card-title">Manage Products</div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card">
+            <div class="icon">
+                <i class="glyphicon"></i>
+            </div>
+            <div class="card-title">Manage Clients</div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card">
+            <div class="icon">
+                <i class="glyphicon"></i>
+            </div>
+            <div class="card-title">Intensive Details</div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card">
+            <div class="icon">
+                <i class="glyphicon"></i>
+            </div>
+            <div class="card-title">Product Sale</div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card">
+            <div class="icon">
+                <i class="glyphicon"></i>
+            </div>
+            <div class="card-title">Pay Salary</div>
+        </div>
+    </div>
+
+</div>

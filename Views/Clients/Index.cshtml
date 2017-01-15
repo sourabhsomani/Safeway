@@ -1,0 +1,146 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+@section Styles{
+    <link href="~/Content/DataTables/css/jquery.dataTables.css" rel="stylesheet" />
+}
+<h2>Client Details</h2>
+<div class="loader" id="loader">
+    <img src="~/Content/Images/loader.gif" />
+</div>
+<div class="back-container">
+    <button class="glyphicon glyphicon-arrow-left blue-btn" id="btnBack" onclick="goBack();"> Back</button>
+</div>
+<table id="tblClients">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone Number</th>
+            <th>Address</th>
+            <th>User Type</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+</table>
+@section Scripts{
+    <script src="~/scripts/DataTables/jquery.dataTables.min.js"></script>
+    <script src="~/scripts/DataTables/dataTables.jqueryui.js"></script>
+    <script>
+        var dTable;
+        var isBusy = false;
+        isBackBtnClicked = false;
+        var backDetails = [];
+        jQuery(document).ready(function () {
+            getClients('');
+        });
+        function getClients(UserId) {
+            if (isBusy) {
+                return false;
+            }
+            if (UserId != '' & !isBackBtnClicked) {
+                backDetails.push(UserId);
+            }
+            else if (isBackBtnClicked) {
+                backDetails.pop();
+                if (backDetails.length > 0) {
+                    UserId = backDetails[backDetails.length - 1];
+                }   
+            }
+            if (backDetails.length > 0) {
+                jQuery("#btnBack").prop("disabled", false);
+            }
+           else {
+                jQuery("#btnBack").prop("disabled", true);
+            }
+            jQuery.ajax({
+                url: "/Clients/GetClients",
+                type: "POST",
+                dataType: "JSON",
+                contentType: "application/json",
+                data: JSON.stringify({ UserId: UserId }),
+                beforeSend: function () {
+                    isBusy = true;
+                    jQuery("#loader").show();
+                    jQuery("#tblClients").hide().width("100%");
+                },
+                success: function (data) {
+                    if (typeof data == "string") {
+                        if (data.toLowerCase() == "login") {
+                            document.location = "/account/login";
+                            return;
+                        }
+                    }
+                    bindClients(data);
+                },
+                complete: function () {
+                    isBusy = false;
+                    jQuery("#loader").hide();
+                    jQuery("#tblClients").show().width("100%");
+                    isBackBtnClicked = false;
+                },
+                error: function (err) {
+                    console.log("Error:" + err);
+                }
+            });
+            function bindClients(dataCleints) {
+                dTable = jQuery("#tblClients").DataTable({
+                    data: dataCleints.data,
+                    columns: [
+                        {
+                            data: "FirstName",
+                            render: function (data, type, full, meta) {
+                                return full.FirstName + " " + full.LastName
+                            }
+                        },
+                        {
+                            data: "Email",
+                        },
+                        {
+                            data: "PhoneNumber",
+                        },
+                        {
+                            data: "Mobile",
+                            //render: function (data, type, full, meta) {
+                            //    var address = full.City + "," + full.State + "," + full.Zip + "," + full.Country;
+                            //    address = address.replace(/^[,\s]+|[,\s]+$/g, '').replace(/,[,\s]*,/g, ',');
+                            //    return address;
+                            //}
+                        },
+                        {
+                            data: "UserType",
+                        },
+                        {
+                            data: "UserId",
+                            render: function (data, type, full, meta) {
+                                if (full.HasClients > 0) {
+                                    return "<button class='btn-user-details' data-user-id='"+ data + "' onclick='getUserDetails(this);'>Get Details</button>\
+                                    <button data-user-id='" + data + "' class='btn-client' onclick='getUserClients(this);'>Get Clients</button>";
+                                }
+                                else {
+                                    return "<button class='btn-user-details' data-user-id='" + data + "' onclick='getUserDetails(this);'>Get Details</button>";
+                                }
+                            }
+                        }
+                    ],
+
+                });
+
+            }
+        }
+        function getUserClients(btnObj) {
+            dTable.destroy();
+            var userId=jQuery(btnObj).data('user-id');
+            getClients(userId);
+        }
+        function getUserDetails(btnObj) {
+            window.open("/Clients/GetClientDetail?UserId=" + jQuery(btnObj).data('user-id'));
+        }
+        function goBack() {
+            dTable.destroy();
+            isBackBtnClicked = true;
+            getClients('');
+        }
+    </script>
+}

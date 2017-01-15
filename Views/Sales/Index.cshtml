@@ -1,0 +1,165 @@
+﻿
+@{
+    ViewBag.Title = "Sales";
+}
+
+<h2>Index</h2>
+@section Styles{
+    <link href="~/Content/DataTables/css/jquery.dataTables.css" rel="stylesheet" />
+}
+<div class="products">
+    <div class="cart-btn-container"><button id="btnCart" class="blue-btn display-none">Your Cart</button></div>
+    <div class="my-cart" id="myCart" style="display:none;">
+        <table class="dataTable table table-hover table-bordered">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Remove From Cart</th>
+                </tr>
+            </thead>
+            <tbody id="cartBody">
+
+            </tbody>
+        </table>
+        <button class="blue-btn" onclick="checkout();">Checkout</button>
+    </div>
+
+    <table id="tblProducts">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+@section Scripts{
+    <script src="~/scripts/DataTables/jquery.dataTables.min.js"></script>
+    <script src="~/scripts/DataTables/dataTables.jqueryui.js"></script>
+    <script>
+        var products = [];
+        var productIds = [];
+        var dTable;
+        jQuery(document).ready(function () {
+            dTable=jQuery('#tblProducts').DataTable({
+                "ajax": "/Sales/GetProducts",
+                "iDisplayLength": 10,
+                "aLengthMenu": [[10, 50, 100, 200, 500], [10, 50, 100, 200, 500]],
+                "columns": [
+                    {
+                        "data": "ProductId",
+                        "visible": false
+                    },
+                    {
+                        "data": "ProductName",
+                    },
+                    {
+                        "data": "AddToCart",
+                        "render": function (data, type, full, meta) {
+                            if (productIds.indexOf(full.ProductId) == -1) {
+                                return "<button class='blue-btn' id='actionBtn" + full.ProductId + "' onclick='return addToCart(" + full.ProductId + ",\"" + full.ProductName + "\",this)'>Add to Cart</button>";
+                            }
+                            return "<button class='blue-btn' id='actionBtn" + full.ProductId + "' onclick='return addToCart(" + full.ProductId + ",this)'>Remove from Cart</button>";
+                        }
+                    }
+                ]
+            });
+            jQuery("#btnCart").click(function () {
+                jQuery("#myCart").slideDown(300);
+            });
+        });
+        function addToCart(_productId, _productName, btnObject) {
+            if (productIds.indexOf(_productId) == -1) {
+                //Add Values
+                productIds.push(_productId);
+                var obj = { productId: _productId,productName:_productName, totalItems: 1 };
+                products.push(obj);
+                jQuery(btnObject).html("Remove from Cart");
+            }
+            else {
+                removeFromCart(_productId);
+            }
+            if (productIds.length > 0) {
+                jQuery("#btnCart").slideDown(300);
+            }
+            else {
+                jQuery("#btnCart").slideUp(300);
+            }
+            bindCartTable();
+            return false;
+        }
+        function bindCartTable() {
+            jQuery("#cartBody").html("");
+            for (var i = 0; i < products.length; i++) {
+                var tr = document.createElement("tr");
+                tr.setAttribute("class", (i%2==0)?"even":"odd");
+                var tdProductName = document.createElement("td");
+                tdProductName.innerHTML = products[i].productName;
+                var tdQty = document.createElement("td");
+                tdQty.innerHTML = "<input type='number' onchange='updateCart(" + products[i].productId + ",this);' min='1' value='" + products[i].totalItems + "'/>"
+                var tbAction = document.createElement("td");
+                tbAction.innerHTML = "<button class='blue-btn' onclick='removeFromCart_ClickedFromCart(" + products[i].productId + ",this);'>Remove from Cart</button>";
+
+                tr.appendChild(tdProductName);
+                tr.appendChild(tdQty);
+                tr.appendChild(tbAction);
+                jQuery("#cartBody").append(tr);
+            }
+        }
+        function removeFromCart_ClickedFromCart(_productId,btnObj){
+            if (removeFromCart(_productId)) {
+                jQuery(btnObj.closest("tr")).remove();
+                if (productIds.length > 0) {
+                    jQuery("#btnCart").slideDown(300);
+                }
+                else {
+                    jQuery("#btnCart").slideUp(300);
+                    jQuery("#myCart").slideUp(300);
+                }
+            }
+        }
+        function removeFromCart(_productId) {
+            if (!confirm("Are you sure you want to remove this item from cart")) {
+                return false;
+            }
+            products = jQuery.grep(products, function (e) {
+                return e.productId != _productId;
+            });
+            productIds = jQuery.grep(productIds, function (e) {
+                return e != _productId;
+            });
+            jQuery("#actionBtn" + _productId).html("Add to Cart");
+            return true;
+        }
+        function updateCart(_productId, numberObj) {
+            var index = productIds.indexOf(_productId);
+            products[index].totalItems = parseInt(jQuery(numberObj).val());
+        }
+        function checkout() {
+            jQuery.ajax({
+                url: "/Sales/checkout",
+                data: { Products: JSON.stringify(products) },
+                //dataType: "json",
+                type:"post",
+                //contentType: "application/json",
+                async:false,
+                beforeSend: function () {
+
+                },
+                success: function (data) {
+
+                },
+                complete: function () {
+
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+
+            });
+        }
+    </script>
+}

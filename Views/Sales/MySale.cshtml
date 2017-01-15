@@ -1,0 +1,240 @@
+﻿@{
+    ViewBag.Title = "MySale";
+}
+
+<h2>My Sale</h2>
+@section Styles{
+    <link href="~/Content/themes/base/jquery-ui.css" rel="stylesheet" />
+    <link href="~/Content/DataTables/css/jquery.dataTables.css" rel="stylesheet" />
+}
+<div class="container">
+    <div class="row">
+        <div class='col-sm-4'>
+            <div class="form-group">
+                <div class='input-group date'>
+                    <input type='text' class="form-control" id="MinDateTime" placeholder="From Date" />
+                </div>
+            </div>
+        </div>
+        <div class='col-sm-4'>
+            <div class="form-group">
+                <div class='input-group date'>
+                    <input type='text' class="form-control" placeholder="To Date" id="MaxDateTime" />
+                </div>
+            </div>
+        </div>
+        <div class='col-sm-4'>
+            <div class="form-group">
+                <div class='input-group date'>
+                    <button class="blue-btn" onclick="reBindData();">Filter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<table id="tblMySale">
+    <thead>
+        <tr>
+            <th>Sr. No.</th>
+            <th>Salling Date</th>
+            <th>Total Unit</th>
+            <th>View</th>
+        </tr>
+    </thead>
+</table>
+@section Scripts{
+    <script src="~/scripts/DataTables/jquery.dataTables.min.js"></script>
+    <script src="~/scripts/DataTables/dataTables.jqueryui.js"></script>
+    <script src="~/scripts/jquery-ui-1.9.2.js"></script>
+    <script type="text/javascript">
+        var i = 0;
+        var dTable = null;
+        jQuery(document).ready(function () {
+            jQuery(function () {
+                var r = new Date();
+                r.setDate(r.getDate() - 30);
+                jQuery('#MinDateTime').datepicker({ defaultDate: r.getMonth() + 1 + "/" + r.getDate() + "/" + r.getFullYear() });
+                jQuery('#MinDateTime').datepicker("setDate", r.getMonth() + 1 + "/" + r.getDate() + "/" + r.getFullYear());
+                jQuery('#MaxDateTime').datepicker();
+                jQuery('#MaxDateTime').datepicker("setDate", new Date());
+            });
+            
+            bindSalesData();
+        });
+        function reBindData() {
+            dTable.destroy();
+            bindSalesData();
+        }
+        function bindSalesData() {
+            i = 0;
+            var r = new Date();
+            r.setDate(r.getDate() - 30);
+            var minDate=jQuery("#MinDateTime").val();
+            var maxDate = jQuery("#MaxDateTime").val();
+            var parsingData = "";
+            if (minDate == ""||maxDate=="") {
+                parsingData=JSON.stringify({ MinDate: r, MaxDate: new Date() });
+            }
+            else{
+                parsingData = JSON.stringify({ MinDate: new Date(minDate), MaxDate: new Date(maxDate) });
+            }
+            jQuery.ajax({
+                url: '/Sales/MySale',
+                type: 'POST',
+                dataType: 'JSON',
+                contentType: 'application/json',
+                data: parsingData,
+                beforeSend: function () {
+                },
+                success: function (res) {
+                    if (typeof res === "string") {
+                        if (res.toLowerCase() == "login") {
+                            window.location = '/account/login';
+                        }
+                    }
+                    if (res == null) {
+                        return false;
+                    }
+                    dTable=jQuery("#tblMySale").DataTable({
+                        data: res.data,
+                        columns: [
+                            {
+                                data: "SaleId",
+                                render: function (data, type, full, meta) {
+                                    i++;
+                                    return i;
+                                },
+                                orderable: false,
+                            },
+                            {
+                                data: "SallingDate",
+                                render: function (data, type, full, meta) {
+                                    var sellingDate = new Date(parseInt(data.substr(6)));
+                                    var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                                    return '<span>' + sellingDate.getDate() + '-' + monthNames[sellingDate.getMonth()] + '-' + sellingDate.getFullYear() + '</span>';
+                                }
+                            },
+                            {
+                                data: "TotalUnitPerSale",
+                                render: function (data, type, full, meta) {
+                                    return data;
+                                }
+                            },
+                            {
+                                data: "SaleId",
+                                render: function (data, type, full, meta) {
+                                    return "<button onclick='viewDetail(this);' class='blue-btn' id='actionBtn"+data+"' data-selling-id='"+data+"'>View Details</button>";
+                                },
+                                orderable:false
+                            }
+                        ],
+                    });
+                },
+                complete: function () {
+                    jQuery("th.ui-state-default").removeClass("ui-state-default");
+                    jQuery(".dataTables_wrapper div").removeClass("ui-widget-header");
+                },
+                error: function (err) {
+                    console.log(err);
+                },
+
+            });
+        }
+        function viewDetail(ctrlObj) {
+            var sellingId = jQuery(ctrlObj).data("selling-id");
+            jQuery.ajax({
+                url: '/Sales/SalesDetailById',
+                type: 'POST',
+                dataType: 'JSON',
+                contentType: 'application/json',
+                data: JSON.stringify({ SaleId: sellingId }),
+                beforeSend: function () {
+                },
+                success: function (res) {
+                    bindSellingDetails(res);
+                },
+                error: function (err) {
+                    console.log(err);
+                },
+                complete: function () {
+                }
+            });
+        }
+        function bindSellingDetails(res) {
+            var divOverlay = document.createElement("div");
+            divOverlay.className = "modal fades";
+            divOverlay.setAttribute("role", "dialog");
+            var divSellingDetails = document.createElement("div");
+            divSellingDetails.className = "modal-content modal-selling";
+            var tableSellingDetails = document.createElement("table");
+            tableSellingDetails.className = "tbl-selling-details table table-bordered";
+            var sellingHead = document.createElement("h3");
+            sellingHead.innerHTML = "Sales Details";
+            divSellingDetails.appendChild(sellingHead);
+            var trTableSellingDetails = document.createElement("tr");
+            trTableSellingDetails.className = "tr-head";
+            var thTotalSaleCount = document.createElement("th");
+            var thUnitRate = document.createElement("th");
+            var thProductName = document.createElement("th");
+            var thTotal = document.createElement("th");
+            thProductName.innerHTML = "Product Name";
+            thTotalSaleCount.innerHTML = "TotalSale Count";
+            thUnitRate.innerHTML = "Unit Rate";
+            thTotal.innerHTML = "Total";
+            trTableSellingDetails.appendChild(thProductName);
+            trTableSellingDetails.appendChild(thTotalSaleCount);
+            trTableSellingDetails.appendChild(thUnitRate);
+            trTableSellingDetails.appendChild(thTotal);
+            tableSellingDetails.appendChild(trTableSellingDetails);
+            for (var item in res.data) {
+                var trData = document.createElement("tr");
+                trData.className = "tr-data";
+                var tdTotalSaleCount = document.createElement("td");
+                var tdUnitRate = document.createElement("td");
+                var tdProductName = document.createElement("td");
+                var tdTotal = document.createElement("td");
+                tdTotalSaleCount.innerHTML = res.data[item].TotalSaleCount;
+                tdUnitRate.innerHTML = res.data[item].UnitRate;
+                tdProductName.innerHTML = res.data[item].ProductName;
+                tdTotal.innerHTML = res.data[item].Total;
+                trData.appendChild(tdProductName);
+                trData.appendChild(tdTotalSaleCount);
+                trData.appendChild(tdUnitRate);
+                trData.appendChild(tdTotal);
+                tableSellingDetails.appendChild(trData);
+            }
+            var trFooter = document.createElement("tr");
+            trFooter.className = "tbl-footer";
+            var tdGrandTotalLabel = document.createElement("td");
+            tdGrandTotalLabel.innerHTML = "Grand Total";
+            tdGrandTotalLabel.colSpan = 3;
+            tdGrandTotalLabel.className = "grand-total-label";
+            var tdGrandTotal = document.createElement("td");
+            tdGrandTotal.className = "grand-total";
+            var grandTotal = 0;
+            res.data.map(function (item, index) {
+                grandTotal += (item.Total);
+            });
+            tdGrandTotal.innerHTML = grandTotal;
+            trFooter.appendChild(tdGrandTotalLabel);
+            trFooter.appendChild(tdGrandTotal);
+            tableSellingDetails.appendChild(trFooter);
+            divSellingDetails.appendChild(tableSellingDetails);
+            var divBottom = document.createElement("div");
+            divBottom.className = "modal-bottom";
+            var btnCloseSalesDetail = document.createElement("button");
+            btnCloseSalesDetail.innerHTML = "Close";
+            btnCloseSalesDetail.className = "btn-close blue-btn";
+            jQuery(btnCloseSalesDetail).on("click",function () {
+                jQuery(".modal").fadeOut(300, function () {
+                    jQuery(".modal").remove();
+                });
+            });
+            divBottom.appendChild(btnCloseSalesDetail);
+            divSellingDetails.appendChild(divBottom);
+            divOverlay.appendChild(divSellingDetails);
+            jQuery("body").append(divOverlay);
+            jQuery(".modal").fadeIn(300);
+        }
+    </script>
+}

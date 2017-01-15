@@ -1,0 +1,79 @@
+﻿@model IEnumerable<SafeWayApplication.Models.PaymentHistory>
+
+@{
+    ViewBag.Title = "GetPaymentHistory";
+}
+
+<h2>GetPaymentHistory</h2>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.UserId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.MinDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.MaxDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PaymentDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.IsPaymentDone)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model)
+{
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.UserId)
+        </td>
+        <td>
+            @item.MinDate.ToString("dd/MMM/yyyy")
+        </td>
+        <td>
+            @item.MaxDate.ToString("dd/MMM/yyyy")
+        </td>
+        <td>
+            @item.PaymentDate.ToString("dd/MM/yyyy hh:mm:ss tt")
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.IsPaymentDone)
+        </td>
+        <td>
+            <button class="btn btn-primary" onclick="GetPaymentHistroyDetails(@item.PaymentId);">Get Details</button>
+        </td>
+    </tr>
+}
+</table>
+@section Scripts{
+    <script>
+        var isprocessing = false;
+        function GetPaymentHistroyDetails(paymentId) {
+            if (isprocessing) { return false; }
+            jQuery.ajax({
+                url: '/payment/GetPaymentHistoryDetails',
+                type:'post',
+                data: "{ 'PaymentId': "+paymentId+" }",
+                dataType: 'json',
+                contentType: 'application/json',
+                beforeSend: function () {
+                    isprocessing = true;
+                },
+                success: function (data) {
+                    debugger;
+                    console.log(data);
+                },
+                error: function (err) {
+                    console.log(err);
+                },
+                complete: function () {
+                    isprocessing = false;
+                }
+            });
+        }
+    </script>
+}

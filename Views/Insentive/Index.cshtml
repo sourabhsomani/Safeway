@@ -1,0 +1,131 @@
+﻿
+@{
+    ViewBag.Title = "Insentive Details";
+}
+
+<h2>Manage Insentive Details</h2>
+@section Styles{
+    <link href="~/Scripts/jtable/themes/metro/blue/jtable.min.css" rel="stylesheet" />
+    <link href="http://jtable.org/Content/themes/metroblue/jquery-ui.css" rel="stylesheet" type="text/css" />
+}
+
+
+<div id="InsentiveTable"></div>
+
+@section Scripts{
+    <script src="~/scripts/jquery-ui-1.9.2.min.js"></script>
+    <script src="~/scripts/jtable/jquery.jtable.js"></script>
+    <script>
+        var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        jQuery(document).ready(function () {
+            jQuery('#InsentiveTable').jtable({
+                title: 'Insentive Detail',
+                paging: true,
+                selecting: true,
+                selectingCheckboxes: true,
+                pageSize: 10,
+                actions: {
+                    listAction: '/Insentive/GetInsentive',
+                    createAction: '/Insentive/CreateInsentive',
+                    updateAction: '/Insentive/EditInsentive',
+                    deleteAction: '/Insentive/DeleteInsentive'
+                },
+                fields: {
+                    Id: {
+                        title: 'Insentive Id',
+                        visibility: 'hidden',
+                        key: true
+                    },
+                    AllounceType: {
+                        title: 'Allounce Type'
+                    },
+                    Description: {
+                        title: 'Description',
+                        visibility: 'hidden',
+                        type: 'textarea',
+                        create: false
+                    },
+                    UserType: {
+                        title: 'User Type',
+                        options: '/UserTypes/GetUserTypes'
+                    },
+                    UserTypeId: {
+                        title: 'UserTypeId',
+                        visibility:'hidden',
+                        options: '/UserTypes/GetUserTypes'
+                    },
+                    FullName: {
+                        title: 'Full Name',
+                        visibility: 'hidden',
+                        key: true
+                    },
+                    ShortName: {
+                        title: 'Short Name',
+                        key: true
+                    },
+                    Days:{
+                        title:'Days'
+                    },
+                    CreatedDate: {
+                        title: 'Created Date',
+                        display: function (data) {
+                            var jsonDate = data.record.CreatedDate;
+                            var CreatedDate = new Date(parseInt(jsonDate.substr(6)));
+                            return '<span>' + CreatedDate.getDate() + '-' + monthNames[CreatedDate.getMonth() - 1] + '-' + CreatedDate.getFullYear() + '</span>';
+                        },
+                        key: true,
+                    },
+                    ModifiedDate: {
+                        title: 'Modified Date',
+                        display: function (data) {
+                            var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                            var jsonDate = data.record.ModifiedDate;
+                            var ModifiedDate = new Date(parseInt(jsonDate.substr(6)));
+                            return '<span>' + ModifiedDate.getDate() + '-' + monthNames[ModifiedDate.getMonth() - 1] + '-' + ModifiedDate.getFullYear() + '</span>';
+                        },
+                        type: 'date',
+                        displayFormat: 'yy-mm-dd',
+                        key: true,
+                    },
+                    IsActive: {
+                        title: 'Is Active',
+                        display: function (data) {
+                            var isActive = data.record.IsActive;
+                            var strChecked = (isActive) ? "checked" : "";
+                            return '<input type="checkbox" ' + strChecked + ' disabled />';
+                        },
+                        type: 'checkbox',
+                        values: { 'false': 'IsActive', 'true': 'IsActive' },
+                    },
+                    CurrentRate: {
+                        title: 'Current Rate',
+                        display: function (data) {
+                            var CurrentRate = data.record.CurrentRate;
+                            return CurrentRate;
+                        }
+                    },
+                    Remark: {
+                        title: 'Remark',
+                        type: 'textarea',
+                    }
+                },
+                formSubmitting: function (event, data) {
+                    if (!validateCurrentRate()) {
+                        alert("Please enter a valid rate.");
+                        return false;
+                    }
+                    return true;
+                },
+            });
+            jQuery('#InsentiveTable').jtable('reload');
+        });
+
+        function validateCurrentRate() {
+            var currentRate = jQuery("#Edit-CurrentRate").val();
+            var regex = /^\d+(\.\d{1,2})?$/;
+            return regex.test(currentRate);
+        }
+
+    </script>
+}
+

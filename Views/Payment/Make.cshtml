@@ -1,0 +1,156 @@
+﻿
+@{
+    ViewBag.Title = "Make";
+}
+
+<h2>Make Payment</h2>
+<img src="~/Content/Images/loader.gif" class="loader" />
+<link href="~/Content/bootstrap-datepicker.css" rel="stylesheet" />
+
+<div class="row">
+    <div class="col-md-6">Min Date<input type="text" class="form-control datepicker" id="MinDate" /></div>
+    <div class="col-md-6">Max Date<input type="text" class="form-control datepicker" id="MaxDate" /></div>
+    <input type="hidden" id="hddUserId" value="@ViewBag.UserId" />
+    <input type="hidden" id="hddMinDate" value="" />
+    <input type="hidden" id="hddMaxDate" value="" />
+</div>
+<div class="row">
+    <div class="col-md-6"><button id="btnGetPaymentDetails" class="btn btn-primary">Get Details</button></div>
+</div>
+<div class="row">
+    <table class="table table-hover table-responsive" id="tblPaymentDetail" style="display:none;">
+        <thead>
+            <tr>
+                <th>Allowance Type</th>
+                <th>Current Rate</th>
+                <th>Allowance</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <button class="btn btn-primary" id="btnPay" style="display:none;">Pay</button>
+    </div>
+</div>
+@section Scripts{
+    <script src="~/scripts/DataTables/jquery.dataTables.min.js"></script>
+    <script src="~/scripts/DataTables/dataTables.jqueryui.js"></script>
+    <script src="~/scripts/bootstrap-datepicker.min.js"></script>
+    <script>
+        var isProcessing = false;
+        var AllowanceData = "";
+        jQuery(".datepicker").datepicker({
+            format: 'dd/MM/yyyy',
+        });
+        jQuery("#MinDate").change(function () {
+            jQuery("#hddMinDate").val(jQuery("#MinDate").val());
+        });
+        jQuery("#MaxDate").change(function () {
+            jQuery("#hddMaxDate").val(jQuery("#MaxDate").val());
+        });
+        jQuery("#btnGetPaymentDetails").click(function (e) {
+            if (isProcessing) { return;}
+            jQuery.ajax({
+                url: '/Payment/GetPaymentDetails',
+                type: 'post',
+                data: { 'UserId': jQuery("#hddUserId").val(), 'MinDate': jQuery("#MinDate").val(), 'MaxDate': jQuery("#MaxDate").val() },
+                dataType:'json',
+                contactType: 'application/json',
+                beforeSend: function () {
+                    isProcessing = true;
+                    jQuery(".loader").show();
+                    jQuery("#tblPaymentDetail").hide(); 
+                },
+                success: function (data) {
+                    AllowanceData = data;
+                    var sum=0;
+                    var tbody = document.createElement("tbody");
+                    jQuery(data.ListPaymentInfos).each(function (index, item) {
+                        var tr = document.createElement("tr");
+                        var allowenceType = item.AllowanceType;
+                        var allowence = item.Allowance;
+                        var currentRate = item.CurrentRate;
+                        var tdAllowenceType = document.createElement("td");
+                        var tdAllowence = document.createElement("td");
+                        var tdCurrentRate = document.createElement("td");
+                        tdAllowenceType.innerHTML = allowenceType;
+                        tdAllowence.innerHTML = allowence;
+                        tdCurrentRate.innerHTML = currentRate;
+                        tr.appendChild(tdAllowenceType);
+                        tr.appendChild(tdCurrentRate);
+                        tr.appendChild(tdAllowence);
+                        tbody.appendChild(tr);
+                        sum += Number(allowence);
+                    });
+                    var tfoot = jQuery("<tfoot><tr><th colspan='2'>Total</th><td>" + sum + "</td></tr></tfoot>");
+                    jQuery("#tblPaymentDetail tbody").remove();
+                    jQuery("#tblPaymentDetail tfoot").remove();
+                    jQuery("#btnPay").show();
+                    jQuery("#tblPaymentDetail").append(tbody).append(tfoot).show();
+                },
+                error: function (err) {
+                    console.log();
+                },
+                complete: function () {
+                    isProcessing = false;
+                    jQuery(".loader").hide();
+                }
+            });
+        });
+        jQuery("#btnPay").click(function (e) {
+            if (isProcessing) { return; }
+            var PaymentData = {};
+            PaymentData.MinDate = jQuery("#hddMinDate").val();
+            PaymentData.MaxDate = jQuery("#hddMaxDate").val();
+            PaymentData.UserId = jQuery("#hddUserId").val();
+            PaymentData.AllowanceData = AllowanceData.ListPaymentInfos;
+            if (confirm("Are you sure you want to pay?")) {
+                jQuery.ajax({
+                    url: '/Payment/pay',
+                    type: 'POST',
+                    data: { "PaymentData": JSON.stringify(PaymentData) },
+                    dataType: 'json',
+                    contactType: 'application/json',
+                    beforeSend: function () {
+                        isProcessing = false;
+                        jQuery(".loader").show();
+                    },
+                    success: function (data) {
+                        var messageHeader = 'Payment Failed';
+                        var messageBody = 'Sorry! Payment has been failed.';
+                        if (data == true) {
+                            messageHeader = 'Payment Done';
+                            messageBody = 'Payment Completed Successfully.';
+                        }
+                        var ModelPopUp = jQuery("<div class='modal fade' id='SuccessModal' role='dialog'>\
+  <div class='modal-dialog'>\
+    <div class='modal-content'>\
+      <div class='modal-header'>\
+        <button type='button' class='close' data-dismiss='modal'>&times;</button>\
+        <h4 class='modal-title'>"+messageHeader+"</h4>\
+      </div>\
+      <div class='modal-body'>\
+        <p>"+messageBody+"</p>\
+      </div>\
+      <div class='modal-footer'>\
+        <button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>\
+      </div>\
+    </div>\
+  </div>\
+</div>");
+                        jQuery("body").append(ModelPopUp);
+                        jQuery("#SuccessModal").show();
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    },
+                    complete:function(){
+                        isProcessing = true;
+                        jQuery(".loader").hide();
+                    }
+                });
+            }
+        });
+    </script>
+}

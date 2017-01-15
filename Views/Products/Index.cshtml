@@ -1,0 +1,161 @@
+﻿
+@{
+    ViewBag.Title = "Product Details";
+}
+
+<h2>Manage Product Details</h2>
+@section Styles{
+    <link href="~/Scripts/jtable/themes/metro/blue/jtable.min.css" rel="stylesheet" />
+    <link href="http://jtable.org/Content/themes/metroblue/jquery-ui.css" rel="stylesheet" type="text/css" />
+}
+
+
+<div id="ProductsTable"></div>
+
+@section Scripts{
+    <script src="~/scripts/jquery-ui-1.9.2.min.js"></script>
+    <script src="~/scripts/jtable/jquery.jtable.js"></script>
+    <script>
+        var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        jQuery(document).ready(function () {
+            jQuery('#ProductsTable').jtable({
+                title: 'Products Detail',
+                paging: true,
+                selecting: true,
+                selectingCheckboxes: true,
+                pageSize: 10,
+                actions: {
+                    listAction: '/Products/GetProducts',
+                    createAction: '/Products/CreateProduct',
+                    updateAction: '/Products/EditProduct',
+                    deleteAction:'/Products/DeleteProduct'
+                },
+                selectionChanged: function (e) {
+                    var selectedRow = jQuery('#ProductsTable').jtable('selectedRows');
+                    if (jQuery(".tr-detail").length > 0) {
+                        jQuery(".tr-detail").slideUp(500, function () {
+                            jQuery(jQuery(".tr-detail")[0]).remove();
+                        });
+                    }
+                    selectedRow = selectedRow[0];
+                    jQuery(selectedRow).each(function () {
+                        var record = jQuery(this).data('record');
+                        var tr = document.createElement("tr");
+                        tr.setAttribute("class", "tr-detail");
+                        var td = document.createElement("td");
+                        td.colSpan = "8";
+
+                        //Creating Element
+                        var divDetail = document.createElement("div");
+
+                        var paraCreatedDate = document.createElement("p");
+                        var _createdDate = new Date(parseInt(record.CreatedDate.substr(6)));
+                        var createdDateShow = _createdDate.getDate() + "-" + monthNames[_createdDate.getMonth() - 1] + '-' + _createdDate.getFullYear();
+                        paraCreatedDate.innerHTML = "<strong>Created Date : </strong>" + createdDateShow;
+
+                        var paraCurrentUnit = document.createElement("p");
+                        paraCurrentUnit.innerHTML = "<strong>Current Unit : </strong>" + record.CurrentUnit;
+
+                        var paraIsActive = document.createElement("p");
+                        paraIsActive.innerHTML = "<strong>Is Prodcut Activated : </strong>" + record.IsActive;
+
+                        var paraModifiedDate = document.createElement("p");
+                        var _modifiedDate = new Date(parseInt(record.ModifiedDate.substr(6)));
+                        var ModifiedDateShow = _modifiedDate.getDate() + "-" + monthNames[_modifiedDate.getMonth() - 1] + '-' + _modifiedDate.getFullYear();
+                        paraModifiedDate.innerHTML = "<strong>Last Modified Date : </strong>" + ModifiedDateShow;
+
+                        var paraProductDescription = document.createElement("p");
+                        paraProductDescription.innerHTML = "<strong>Product Description : </strong>" + record.ProductDescription;
+
+                        var paraProductName = document.createElement("p");
+                        paraProductName.innerHTML = "<strong>Product Name : </strong>" + record.ProductName;
+
+                        var paraRemark = document.createElement("p");
+                        paraRemark.innerHTML = "<strong>Remark : </strong>" + record.Remark;
+
+                        //appending Data to Main Div
+                        divDetail.appendChild(paraProductName);
+                        divDetail.appendChild(paraProductDescription);
+                        divDetail.appendChild(paraCurrentUnit);
+                        divDetail.appendChild(paraCreatedDate);
+                        divDetail.appendChild(paraModifiedDate);
+                        divDetail.appendChild(paraIsActive);
+                        divDetail.appendChild(paraRemark);
+
+                        td.appendChild(divDetail);
+                        tr.appendChild(td);
+                        setTimeout(function () {
+                            jQuery(tr).insertAfter(selectedRow).hide().slideDown();
+                        },600);
+                        console.log(record);
+                    })
+                },
+                deleteConfirmation:function(data){
+                    data.deleteConfirmMessage = 'Are you sure to delete product ' + data.record.ProductName + '?';
+                },
+                fields: {
+                    ProductId: {
+                        title: 'Product Id',
+                        visibility: 'hidden',
+                        key: true
+                    },
+                    ProductName: {
+                        title: 'Product Name'
+                    },
+                    ProductDescription: {
+                        title: 'Product Description',
+                        visibility: 'hidden',
+                        type: 'textarea',
+                    },
+                    CurrentUnit: {
+                        title: 'Current Unit'
+                    },
+                    CreatedDate: {
+                        title: 'Created Date',
+                        display: function (data) {
+                            var jsonDate = data.record.CreatedDate;
+                            var createdDate = new Date(parseInt(jsonDate.substr(6)));
+                            return '<span>' + createdDate.getDate() + '-' + monthNames[createdDate.getMonth() - 1] + '-' + createdDate.getFullYear() + '</span>';
+                        },
+                        key: true,
+                    },
+                    ModifiedDate: {
+                        title: 'Modified Date',
+                        display: function (data) {
+                            var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                            var jsonDate = data.record.ModifiedDate;
+                            var createdDate = new Date(parseInt(jsonDate.substr(6)));
+                            return '<span>' + createdDate.getDate() + '-' + monthNames[createdDate.getMonth() - 1] + '-' + createdDate.getFullYear() + '</span>';
+                        },
+                        type: 'date',
+                        displayFormat: 'yy-mm-dd',
+                        key: true,
+                    },
+                    IsActive: {
+                        title: 'IsActive',
+                        display: function (data) {
+                            var isActive = data.record.IsActive;
+                            var strChecked = (isActive) ? "checked" : "";
+                            return '<input type="checkbox" ' + strChecked + ' disabled />';
+                        },
+                        type: 'checkbox',
+                        values: { 'false': 'IsActive', 'true': 'IsActive' },
+                    },
+                    IsDeleted: {
+                        title: 'IsDeleted',
+                        visibility: 'hidden',
+                        type: 'checkbox',
+                        values: { 'false': 'IsDeleted', 'true': 'IsDeleted' },
+                        edit: false,
+                        create: false
+                    },
+                    Remark: {
+                        title: 'Remark',
+                        type: 'textarea',
+                    }
+                }
+            });
+            jQuery('#ProductsTable').jtable('reload');
+        });
+    </script>
+}

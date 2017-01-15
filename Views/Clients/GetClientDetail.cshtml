@@ -1,0 +1,81 @@
+﻿@model SafeWayApplication.Models.ClientDetails
+
+@{
+    ViewBag.Title = "GetClientDetail";
+}
+
+<h2>GetClientDetail</h2>
+
+<div>
+    <h4>ClientDetails</h4>
+    <hr />
+    <div class="row border-bottom-with-padding">
+        <div class="col-sm-3"><div class="text-right"><strong>Name</strong></div></div>
+        <div class="col-sm-9">@Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.LastName)</div>
+    </div>
+    <div class="row border-bottom-with-padding">
+        <div class="col-sm-3"><div class="text-right"><strong>Email</strong></div></div>
+        <div class="col-sm-9">@Html.DisplayFor(model => model.Email)</div>
+    </div>
+    <div class="row border-bottom-with-padding">
+        <div class="col-sm-3"><div class="text-right"><strong>Phone Number</strong></div></div>
+        <div class="col-sm-9">@Html.DisplayFor(model => model.PhoneNumber)</div>
+    </div>
+    <div class="row border-bottom-with-padding">
+        <div class="col-sm-3"><div class="text-right"><strong>Mobile Number</strong></div></div>
+        <div class="col-sm-9">@Html.DisplayFor(model => model.Mobile)</div>
+    </div>
+    <div class="row border-bottom-with-padding">
+        <div class="col-sm-3"><div class="text-right"><strong>Verified</strong></div></div>
+        <div class="col-sm-9">@Html.DisplayFor(model => model.IsVarified)<label></label></div>
+    </div>
+    <div class="row border-bottom-with-padding">
+        <div class="col-sm-3"><div class="text-right"><strong>Address</strong></div></div>
+        <div class="col-sm-9">@Html.DisplayFor(model => model.City)  @Html.DisplayFor(model => model.State) +@Html.DisplayFor(model => model.Zip)</div>
+    </div>
+    <div class="row border-bottom-with-padding">
+        <div class="col-sm-3"><div class="text-right"><strong>User Type</strong></div></div>
+        <div class="col-sm-9">@Html.DisplayFor(model => model.UserType)</div>
+    </div>
+    <div class="row border-bottom-with-padding">
+        <div class="col-sm-3"><div class="text-right"><strong>Description</strong></div></div>
+        <div class="col-sm-9">@Html.DisplayFor(model => model.Description)</div>
+    </div>
+    <div class="row border-bottom-with-padding">
+        <div class="col-sm-3"><div class="text-right"><strong>Date of Joining</strong></div></div>
+        <div class="col-sm-9">@Html.DisplayFor(model => model.DateOfJoining)</div>
+    </div>
+    <div class="row border-bottom-with-padding">
+        <div class="col-sm-3"><div class="text-right"><strong>Total Clients</strong></div></div>
+        <div class="col-sm-9">@Html.DisplayFor(model => model.TotalClients)</div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <a href="javascript:void(0);" class="btn btn-primary" id="btnMakePayment">Pay</a>
+            <a href="javascript:void(0);" class="btn btn-primary" id="btnPaymentHistory">Get Payment History</a>
+        </div>
+    </div>
+</div>  
+@section Scripts{
+    <script src="~/scripts/DataTables/jquery.dataTables.min.js"></script>
+    <script src="~/scripts/DataTables/dataTables.jqueryui.js"></script>
+   <script>
+       jQuery("#btnMakePayment").click(function (e) {
+           var userId = getParameterByName("UserId");
+           window.location.href="/Payment/Make?UserId="+userId;
+       });
+       jQuery("#btnPaymentHistory").click(function (e) {
+           var userId = getParameterByName("UserId");
+           window.location.href = "/Payment/GetPaymentHistory?UserId=" + userId;
+       });
+       function getParameterByName(name) {
+           var url = window.location.href;
+           name = name.replace(/[\[\]]/g, "\\$&");
+           var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+               results = regex.exec(url);
+           if (!results) return null;
+           if (!results[2]) return '';
+           return decodeURIComponent(results[2].replace(/\+/g, " "));
+       }
+   </script>
+}

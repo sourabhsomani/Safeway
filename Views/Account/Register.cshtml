@@ -1,0 +1,188 @@
+﻿@model SafeWayApplication.Models.UserDetail
+
+@{
+    ViewBag.Title = "Register";
+}
+
+<h2>Register</h2>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <h4>UserDetail</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.FirstName, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.FirstName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.LastName, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.LastName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.LastName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.PhoneNumber, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.PhoneNumber, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.PhoneNumber, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Mobile, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Mobile, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Mobile, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.UserTypeId, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @*@Html.DropDownListFor(model => model.UserTypeId, new SelectList(ViewBag.UserTypes, "Id", "FullName", Model.UserTypeId), "Select User Type", new { @class = "formcontrol input-lg" })*@
+                <select id="UserTypeId" name="UserTypeId" class="formcontrol input-lg">
+                    @if (!object.Equals(ViewBag.UserTypes, null))
+                    {
+                        foreach (var item in ViewBag.UserTypes)
+                        {
+                            <option value="@item.Id">@item.FullName</option>
+                        }
+                    }
+                </select>
+                @Html.ValidationMessageFor(model => model.UserTypeId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.IsVarified, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <div class="checkbox">
+                    @*@Html.EditorFor(model => model.IsVarified)*@
+                    <input type="checkbox" style="display:none;" id="IsVarified" name="IsVarified" />
+                    <label for="IsVarified"></label>
+                    @Html.ValidationMessageFor(model => model.IsVarified, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Country, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Country, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Country, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Zip, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Zip, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Zip, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.State, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.State, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.State, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.City, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.City, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.City, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Register" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+    <h3 class="success">@ViewBag.Result</h3>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<script>
+    //Getting Location on the basis of city and Zip
+    //http://maps.googleapis.com/maps/api/geocode/json?address=312001&country=india&sensor=false
+    function GetCityAndState() {
+        jQuery("#City,#State").val("");
+        jQuery.ajax({
+            url: 'http://maps.googleapis.com/maps/api/geocode/json?address=' + jQuery("#Zip").val() + '&country=' + jQuery("#Country").val() + '&sensor=false',
+            method: 'post',
+            success: function (result) {
+                var isCityFilled = false;
+                var isStateFilled = false;
+                if (result.results.length > 0) {
+                    if(result.results[0].address_components.length>0){
+                        for (var i = 0; i < result.results[0].address_components.length; i++) {
+                            var typeResult=result.results[0].address_components[i].types.join(',');
+                            if (typeResult == "administrative_area_level_2,political") {
+                                if (!isCityFilled) {
+                                    var CityName = result.results[0].address_components[i].long_name;
+                                    jQuery("#City").val(CityName);
+                                    isCityFilled = true;
+                                }
+                            }
+                            else if (typeResult == "administrative_area_level_1,political") {
+                                if (!isStateFilled) {
+                                    var StateName = result.results[0].address_components[i].long_name;
+                                    jQuery("#State").val(StateName);
+                                    isStateFilled = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            error: function (err) {
+                console.log(err);
+            }
+
+        });
+    }
+
+    jQuery(document).ready(function () {
+        jQuery("#Zip").blur(function () {
+            GetCityAndState();
+        });
+    });
+</script>
